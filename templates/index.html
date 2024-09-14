@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widgetx Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+        #user-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .user {
+            text-align: right;
+            color: blue;
+        }
+        .bot {
+            text-align: left;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Widgetx Chatbot</h1>
+    <img src="/static/widgetx_logo.png" alt="Widgetx Logo" style="max-width: 200px;">
+    
+    <h2>Train the Chatbot</h2>
+    <form id="train-form">
+        <input type="url" id="website-url" placeholder="Enter website URL" required>
+        <button type="submit">Train</button>
+    </form>
+
+    <h2>Chat</h2>
+    <div id="chat-container"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+
+    <script>
+        const trainForm = document.getElementById('train-form');
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        let websiteId = null;
+
+        trainForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('website-url').value;
+            const response = await fetch('/train', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `url=${encodeURIComponent(url)}`
+            });
+            const result = await response.json();
+            alert(result.message);
+            websiteId = 1; // For simplicity, we're assuming the first website has ID 1
+        });
+
+        userInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && userInput.value.trim() && websiteId) {
+                const message = userInput.value.trim();
+                addMessage('user', message);
+                userInput.value = '';
+
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message, website_id: websiteId})
+                });
+                const result = await response.json();
+                addMessage('bot', result.reply);
+            }
+        });
+
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
