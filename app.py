@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Set up OpenAI client
+# Set up OpenAI client 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Initialize session state
